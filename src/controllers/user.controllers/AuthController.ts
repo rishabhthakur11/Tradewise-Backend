@@ -67,6 +67,7 @@ export default class AuthController implements Controller {
       const registeredUser = await this.AuthServices.RegisterUserOnDb(newUser);
       const { _id, last_name, phone, profileImgUrl, balance } = registeredUser;
       const respData = {
+        _id,
         userID,
         first_name,
         last_name,
@@ -81,6 +82,7 @@ export default class AuthController implements Controller {
         _id,
         email,
       };
+
 
       const { accessToken, refreshToken } =
         this.tokenService.generateToken(payload);
@@ -141,11 +143,12 @@ export default class AuthController implements Controller {
         dateOfBirth,
         phone,
         profileImgUrl,
-        balance,
+        balance
       } = existingUser;
 
       const respData = {
-        userID,
+        _id,
+        "userID": existingUser.userID,
         first_name,
         last_name,
         email,
@@ -157,7 +160,7 @@ export default class AuthController implements Controller {
 
       const payload: customJwtPayload = {
         _id,
-        email,
+        "email": existingUser.email
       };
 
       const { accessToken, refreshToken } =
@@ -193,7 +196,6 @@ export default class AuthController implements Controller {
     res: Response
   ): Promise<Response | void> => {
     try {
-      console.log("Cookies: ", req.cookies);
       const { refreshToken: refreshTokenFromCookie } = req.cookies;
       if (!refreshTokenFromCookie)
         return res
@@ -202,11 +204,12 @@ export default class AuthController implements Controller {
       const payload = (await this.tokenService.verifyRefreshToken(
         refreshTokenFromCookie
       )) as customJwtPayload;
-      const { _id } = payload;
+      const { _id } = payload
       const token = await this.tokenService.findRefreshToken(
         _id,
         refreshTokenFromCookie
       );
+
       if (!token) {
         res.clearCookie("refreshToken");
         res.clearCookie("accessToken");
@@ -216,13 +219,44 @@ export default class AuthController implements Controller {
       }
 
       const user = await this.AuthServices.findUser({ _id });
+      if (!user) return res.status(403).json({ success: false, message: "User not found" });
+
+      const newPayload: customJwtPayload = {
+        _id,
+        "email": user.email
+      };
       const { accessToken, refreshToken } =
-        this.tokenService.generateToken(payload);
-      await this.tokenService.updateRefreshToken(
+        this.tokenService.generateToken(newPayload);
+
+      const isTokenUpdated = await this.tokenService.updateRefreshToken(
         _id,
         refreshTokenFromCookie,
         refreshToken
       );
+      if (!isTokenUpdated) return res.status(403).json({ success: false, message: "Update of token failed" });
+      const {
+        first_name,
+        last_name,
+        userID,
+        email,
+        dateOfBirth,
+        phone,
+        profileImgUrl,
+        balance
+      } = user;
+
+      const respData = {
+        _id,
+        userID,
+        first_name,
+        last_name,
+        email,
+        dateOfBirth,
+        phone,
+        profileImgUrl,
+        balance,
+      };
+
       res.cookie("accessToken", accessToken, {
         maxAge: 1000 * 60 * 60 * 24 * 30,
         httpOnly: true,
@@ -231,10 +265,11 @@ export default class AuthController implements Controller {
         maxAge: 1000 * 60 * 60 * 24 * 30,
         httpOnly: true,
       });
+
       res.status(200).json({
         success: true,
         message: "Secure access has been granted",
-        data: { ...user },
+        data: { ...respData },
       });
     } catch (error) {
       res.json({
@@ -313,23 +348,22 @@ export default class AuthController implements Controller {
     }
   };
 
-  private logout = async (req: Request, res: Response): Promise<Response | void> =>
-    {
-        try {
-          const {refreshToken} = req.cookies;
-        const {_id} = req.user as UserType;
-        const response = await this.tokenService.removeRefreshToken(String(_id),refreshToken);
-        res.clearCookie('refreshToken');
-        res.clearCookie('accessToken');
-        return res.json({success:true,message:'Logout Successfully'});
-        } catch (error) {
-          res.json({
-            success: false,
-            message: "Logout Unsuccessful",
-            error,
-          });
-          
-        }
-        
+  private logout = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { refreshToken } = req.cookies;
+      //const { _id } = req.user as UserType;
+      //const response = await this.tokenService.removeRefreshToken(String(_id), refreshToken);
+      res.clearCookie('refreshToken');
+      res.clearCookie('accessToken');
+      return res.json({ success: true, message: 'Logout Successfully' });
+    } catch (error) {
+      res.json({
+        success: false,
+        message: "Logout Unsuccessful",
+        error,
+      });
+
     }
+
+  }
 }

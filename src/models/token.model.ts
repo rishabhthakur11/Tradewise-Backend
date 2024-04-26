@@ -2,19 +2,19 @@ import { Schema, model } from "mongoose";
 
 const tokenSchema = new Schema({
 
-    userId:{
-        type:Schema.Types.ObjectId,
-        ref:'User'
+    userID: {
+        type: Schema.Types.ObjectId,
+        ref: 'Users'
     },
-    tokens:[
+    tokens: [
         {
-            token:{
-                type:String,
-                required:true
+            token: {
+                type: String,
+                required: true
             }
         }
     ]
 
 });
 
-export default model('Token',tokenSchema,'tokens');
+export default model('Token', tokenSchema);

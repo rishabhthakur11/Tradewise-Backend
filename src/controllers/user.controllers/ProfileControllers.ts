@@ -4,6 +4,7 @@ import { UpdatePasswordObj, UpdateProfileReqObj } from "../../utils/interfaces/u
 import UserModel from "../../models/user.model";
 import bcrypt from "bcryptjs";
 import ProfileServices from "../../services/profile.services";
+import PurchasedStockModel from "../../models/purchasedStock.model";
 
 export default class ProfileController implements Controller{
     public path: string;
@@ -21,7 +22,28 @@ export default class ProfileController implements Controller{
         this.router.post(`${this.path}/getUserBalance`, this.getUserBalance);
         this.router.put(`${this.path}/balance/add`,this.addUserBalance); 
         this.router.put(`${this.path}/balance/deduct`,this.deductUserBalance); 
+        this.router.post(`${this.path}/portfolio`, this.getStockPortfolio);
         
+      }
+
+      private getStockPortfolio = async (
+        req: Request,
+        res: Response
+      ): Promise<Response | void> => {
+       try {
+        type PortfolioReqObj = {
+          userID: string
+        };
+        const reqObj:PortfolioReqObj = req.body;
+        const { userID } = reqObj;
+        if(!userID) return res.json({success: false, message: "UserId is required!"});
+        const portfolio = await PurchasedStockModel.find({userID});
+        if(!portfolio) return res.status(400).json({success: false, message:"No stocks in portfolio!"});
+        return res.status(200).json({success: true, message:"Portfolio Fetched successfully!", data: portfolio});
+        
+       } catch (error) {
+        res.status(404).json({ success:false, message:"Error fetching portfolio!", error});
+       }
       }
 
       private updateProfile = async (
@@ -105,7 +127,6 @@ export default class ProfileController implements Controller{
           res.status(400).json({success:false, message:"Error Fetching Balance", error});
         }
       }
-
 
       public addUserBalance = async (
         req: Request,

@@ -12,6 +12,7 @@ const PurchasedStockSchema = new Schema({
     symbol: { type: String, required: true },
     shares: { type: Number, required: true },
     initialInvestment: { type: Number, required: true },
+
   });
   
   export default model<PurchasedStockModel>('PurchasedStock', PurchasedStockSchema);

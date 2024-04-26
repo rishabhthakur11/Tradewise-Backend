@@ -16,7 +16,7 @@ class TransactionController {
   private initializeRoutes(): void {
     this.router.get(`${this.path}`, this.getAllTransactions);
     this.router.get(`${this.path}/symbol/:symbol`, this.getTransactionsBySymbol);
-    this.router.get(`${this.path}/user/:userId`, this.getTransactionsByUserId);
+    this.router.post(`${this.path}/user/investment`, this.getTransactionsByUserId);
     this.router.get(`${this.path}/id/:transactionId`, this.getTransactionById);
     this.router.post(`${this.path}/execute`, this.executeTransaction);
   }
@@ -42,9 +42,10 @@ class TransactionController {
 
   private getTransactionsByUserId = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.params.userId;
+      const reqObj: { userId: string } = req.body;
+      const { userId } = reqObj;
       const transactions = await this.transactionService.getTransactionsByUserId(userId);
-      res.status(200).json({ status: 'success', data: transactions });
+      res.status(200).json({ success: 'true', data: transactions });
     } catch (error: any) {
       res.status(500).json({ status: 'error', message: 'Failed to get transactions by user ID', error: error.message });
     }

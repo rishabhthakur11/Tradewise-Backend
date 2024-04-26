@@ -22,9 +22,9 @@ class OrderController {
     try {
       const orderData: OrderModel = req.body;
       await this.orderService.placeOrder(orderData);
-      res.status(201).json({ status: 'success', message: 'Order placed successfully' });
-    } catch (error:any) {
-      res.status(500).json({ status: 'error', message: 'Failed to place order', error: error.message });
+      res.status(201).json({ success: true, message: 'Order placed successfully' });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Failed to place order', error: error.message });
     }
   };
 }

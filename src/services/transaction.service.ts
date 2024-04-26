@@ -47,7 +47,7 @@ class TransactionService {
     try {
       const transactions = await TransactionModel.find();
       return transactions;
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error('Failed to get all transactions: ' + error.message);
     }
   }
@@ -56,16 +56,16 @@ class TransactionService {
     try {
       const transactions = await TransactionModel.find({ symbol });
       return transactions;
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error('Failed to get transactions by symbol: ' + error.message);
     }
   }
 
   getTransactionsByUserId = async (userId: string): Promise<Transaction[]> => {
     try {
-      const transactions = await TransactionModel.find({ userId });
+      const transactions = await TransactionModel.find({ userID: userId });
       return transactions;
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error('Failed to get transactions by user ID: ' + error.message);
     }
   }

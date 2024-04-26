@@ -6,7 +6,7 @@ import "./utils/passport";
 import passport from "passport";
 const session = require('express-session');
 const cors = require('cors');
-import StockController from "./controllers/stock.controllers/stockController";
+const cookieParser = require('cookie-parser');
 
 
 
@@ -36,7 +36,9 @@ class App {
   private initialiseMiddleware(): void {
     // parse application/json
     this.express.use(express.json());
+    this.express.use(cookieParser());
     this.express.use(cors(corsOption));
+    this.express.use(cors({ credentials: true }))
     // parse application/x-www-form-urlencoded
     this.express.use(express.urlencoded({ extended: false }));
     this.express.use(session({
